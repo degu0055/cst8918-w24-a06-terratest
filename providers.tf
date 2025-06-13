@@ -13,12 +13,11 @@ terraform {
       version = "2.3.3"
     }
   }
-
 }
 
 # Define providers and their config params
 provider "azurerm" {
-  # Leave the features block empty to accept all defaults
+  subscription_id = var.subscription_id  # <- Added line
   features {}
 }
 
