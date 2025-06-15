@@ -1,4 +1,3 @@
-# Define output values for later reference
 output "resource_group_name" {
   value = azurerm_resource_group.rg.name
 }
@@ -12,5 +11,10 @@ output "nic_name" {
 }
 
 output "public_ip" {
-  value = azurerm_linux_virtual_machine.webserver.public_ip_address
+  value = azurerm_public_ip.webserver.ip_address
+}
+
+output "admin_ssh_key" {
+  value       = file("/Users/romeodeguzmanii/.ssh/id_rsa.pub")
+  description = "SSH public key used for VM admin access"
 }

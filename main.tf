@@ -20,7 +20,6 @@ resource "azurerm_virtual_network" "vnet" {
   resource_group_name = azurerm_resource_group.rg.name
 }
 
-
 # Define the subnet
 resource "azurerm_subnet" "webserver" {
   name                 = "${var.labelPrefix}A06Subnet"
@@ -31,7 +30,7 @@ resource "azurerm_subnet" "webserver" {
 
 # Define network security group and rules
 resource "azurerm_network_security_group" "webserver" {
-  name                = "${var.labelPrefix}A06SG" # mckennrA06SG
+  name                = "${var.labelPrefix}A06SG"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
@@ -95,11 +94,11 @@ data "cloudinit_config" "init" {
 
 # Define the virtual machine
 resource "azurerm_linux_virtual_machine" "webserver" {
-  name                  = "${var.labelPrefix}A06VM"
-  resource_group_name   = azurerm_resource_group.rg.name
-  location              = azurerm_resource_group.rg.location
-  network_interface_ids = [azurerm_network_interface.webserver.id]
-  size                  = "Standard_B1s"
+  name                   = "${var.labelPrefix}A06VM"
+  resource_group_name    = azurerm_resource_group.rg.name
+  location               = azurerm_resource_group.rg.location
+  network_interface_ids  = [azurerm_network_interface.webserver.id]
+  size                   = "Standard_B1s"
 
   os_disk {
     name                 = "${var.labelPrefix}A06OSDisk"
@@ -114,13 +113,13 @@ resource "azurerm_linux_virtual_machine" "webserver" {
     version   = "latest"
   }
 
-  computer_name                   = "${var.labelPrefix}A06VM"
-  admin_username                  = var.admin_username
-  disable_password_authentication = true
+  computer_name                    = "${var.labelPrefix}A06VM"
+  admin_username                   = var.admin_username
+  disable_password_authentication  = true
 
   admin_ssh_key {
     username   = var.admin_username
-    public_key = file("~/.ssh/id_rsa.pub")
+    public_key = file("/Users/romeodeguzmanii/.ssh/id_rsa.pub")
   }
 
   custom_data = data.cloudinit_config.init.rendered

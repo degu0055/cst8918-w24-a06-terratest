@@ -1,39 +1,37 @@
-package test
+package test2
 
 import (
-	"strings"
+	"io/ioutil"
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/azure"
+	"github.com/gruntwork-io/terratest/modules/ssh"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNicConnectedToVM(t *testing.T) {
-	// Load Terraform output from root directory
+func TestUbuntuVersion(t *testing.T) {
 	terraformOptions := &terraform.Options{
-		TerraformDir: "../", // adjust if your test directory is elsewhere
+		TerraformDir: "../",
 	}
 
-	// Pull values from Terraform output
-	subscriptionID := "cdb9bdf3-e7ee-43e9-8f6c-ba7327868df1" // <-- replace with your actual subscription ID
-	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
-	vmName := terraform.Output(t, terraformOptions, "vm_name")
-	expectedNicName := terraform.Output(t, terraformOptions, "nic_name")
+	vmPublicIP := terraform.Output(t, terraformOptions, "public_ip")
 
-	// Get NICs attached to the VM
-	nicList := azure.GetVirtualMachineNics(t, vmName, resourceGroupName, subscriptionID)
-
-	assert.NotEmpty(t, nicList, "NIC list should not be empty")
-	assert.True(t, containsIgnoreCase(nicList, expectedNicName), "Expected NIC is not connected to the VM")
-}
-
-// Helper function to check case-insensitive match
-func containsIgnoreCase(list []string, target string) bool {
-	for _, item := range list {
-		if strings.EqualFold(item, target) {
-			return true
-		}
+	// Read private key file contents
+	privateKeyPath := "/Users/romeodeguzmanii/.ssh/id_rsa" // <--- update to your real key path
+	privateKeyBytes, err := ioutil.ReadFile(privateKeyPath)
+	if err != nil {
+		t.Fatalf("Failed to read private key file: %v", err)
 	}
-	return false
+
+	sshHost := ssh.Host{
+		Hostname:    vmPublicIP,
+		SshUserName: "azureadmin",
+		SshKeyPair: &ssh.KeyPair{
+			PrivateKey: string(privateKeyBytes),
+		},
+	}
+
+	output, err := ssh.CheckSshCommandE(t, sshHost, "lsb_release -a")
+	assert.NoError(t, err)
+	assert.Contains(t, output, "Ubuntu 22.04")
 }
